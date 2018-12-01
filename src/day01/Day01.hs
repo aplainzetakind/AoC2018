@@ -5,10 +5,8 @@ import Text.Megaparsec.String
 import qualified Data.Set as S
 import Data.Maybe
 
--- input file
 file = readFile "input"
 
--- parsers
 plus :: Num a => Parser (a -> a -> a)
 plus = const (+) <$> char '+'
 
@@ -24,7 +22,6 @@ addLine = (plus <|> minus) <*> digits <* eol
 addLines :: Parser [Int -> Int]
 addLines = many addLine
 
--- result of file parse
 ops :: String -> Maybe [Int -> Int]
 ops = parseMaybe addLines
 
