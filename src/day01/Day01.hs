@@ -1,11 +1,15 @@
 module Day01 where
 
 import Text.Megaparsec
-import Text.Megaparsec.String
+import Text.Megaparsec.Char
+import Text.Megaparsec.Stream
+import Data.Void
 import qualified Data.IntSet as S
 import Data.Maybe
 
 file = readFile "input"
+
+type Parser = Parsec Void String
 
 plus :: Num a => Parser (a -> a -> a)
 plus = const (+) <$> char '+'
