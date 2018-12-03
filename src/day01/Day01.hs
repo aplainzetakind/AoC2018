@@ -3,11 +3,10 @@ module Day01 where
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Stream
+import System.Environment
 import Data.Void
 import qualified Data.IntSet as S
 import Data.Maybe
-
-file = readFile "input"
 
 type Parser = Parsec Void String
 
@@ -41,11 +40,14 @@ firstDuplicate xs = go xs S.empty
                                         | otherwise      = go xs (x `S.insert` s)
                             go [] s                      = Nothing
 
-problem1 :: IO (Maybe Int)
-problem1 = fmap sumLines . ops <$> file
+star1 :: String -> Int
+star1 = maybe (error "something happened") sumLines . ops
 
-problem2 :: IO (Maybe Int)
-problem2 = (firstDuplicate =<<) . fmap (sumsLines . cycle) . ops <$> file
+star2 :: String -> Int
+star2 = fromMaybe (error "something happened") . (firstDuplicate =<<)
+           . fmap (sumsLines . cycle) . ops
 
 main :: IO ()
-main = problem1 >>= print >> problem2 >>= print
+main = do contents <- readFile . head =<< getArgs
+          print $ star1 contents
+          print $ star2 contents

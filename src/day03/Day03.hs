@@ -6,37 +6,34 @@ import Text.Megaparsec.Stream
 import Data.Void
 import qualified Data.Set as S
 import Data.Maybe
+import System.Environment
 
 type Parser = Parsec Void String
 
-data Corners = C Int Int Int Int deriving Show
+data Corners = C { idt    :: Int
+                 , top    :: Int
+                 , bottom :: Int
+                 , width  :: Int
+                 , height :: Int } deriving Show
 
 file = readFile "input"
 
 number :: Parser Int
 number = read <$> many digitChar
 
-first :: Parser Int
-first = string "#" *> many digitChar
-                   *> string " @ "
-                   *> number <* string ","
+corner = do char '#'
+            i <- number <* string " @ "
+            x <- number <* char ','
+            y <- number <* string ": "
+            w <- number <* char 'x'
+            h <- number <* (const () <$> eol <|> eof)
+            pure (C i x y w h)
 
-second :: Parser Int
-second = fmap read $ many digitChar <* string ": "
-
-third :: Parser Int
-third = number <* string "x"
-
-fourth :: Parser Int
-fourth = number
-
-corners = C <$> first <*> second <*> third <*> fourth
-
-getCorners :: String -> Corners
-getCorners = fromMaybe (error "something happened") . parseMaybe corners
+getCorners :: String -> [Corners]
+getCorners = fromMaybe (error "something happened") . parseMaybe (many corner)
 
 pairsInside :: Corners -> S.Set (Int, Int)
-pairsInside (C x y w h) = S.fromList
+pairsInside (C _ x y w h) = S.fromList
                         [(i, j) | i <- [x + 1..x + w], j <- [y + 1..y + h]]
 
 process :: [Corners] -> S.Set (Int, Int)
@@ -49,10 +46,9 @@ process = go S.empty S.empty
                                     in  go s1 s2 cs
 
 main :: IO ()
-main = do pairs <- fmap (\l -> (tail . head . words $ l, getCorners l))
-                              . lines <$> file
-          let multpoints = process . fmap snd $ pairs
-          print $ length multpoints
-          putStrLn . fst . head
-              $ filter ((== S.empty) .S.intersection multpoints
-              . pairsInside . snd) pairs
+main = do corners <- getCorners <$> (readFile =<< head <$> getArgs)
+          let overlaps = process corners
+          print $ S.size overlaps
+          print . idt . head
+              $ filter ((== S.empty) . S.intersection overlaps . pairsInside)
+                       corners
