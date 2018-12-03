@@ -1,6 +1,9 @@
 module Day02 where
 
 import Data.List
+import qualified Data.Set as S
+import Control.Monad
+import Data.Maybe
 
 file :: IO String
 file = readFile "input"
@@ -19,20 +22,20 @@ countBoth = foldl f (0,0)
 star1 :: IO Int
 star1 = uncurry (*) . countBoth . lines <$> file
 
-differ :: (Eq a, Num t) => [a] -> [a] -> (t, [a])
-differ = go 0 []
-           where go n rs xs ys = case (xs, ys) of
-                                  (a:as, b:bs) | a == b -> go n (a:rs) as bs
-                                               | otherwise -> go (n + 1) rs as bs
-                                  ([],[]) -> (n, reverse rs)
-                                  _ -> error "something happened"
+skip :: Int -> String -> String
+skip n cs = take (n - 1) cs ++ drop n cs
 
-findOneDiff :: (Applicative t, Foldable t) => t String -> String
-findOneDiff l = maybe "something happened" snd . find ((== 1) . fst)
-                                            $ differ <$> l <*> l
+firstDuplicate :: [String] -> Maybe String
+firstDuplicate xs = go xs S.empty
+                     where go (x:xs) s | x `S.member` s = Just x
+                                       | otherwise      = go xs (x `S.insert` s)
+                           go [] s                      = Nothing
+
+findMatch :: [String] -> Maybe String
+findMatch ls = msum $ fmap firstDuplicate [fmap (skip n) ls | n <- [1..]]
 
 star2 :: IO String
-star2 = findOneDiff . lines <$> file
+star2 = fromMaybe "something happened" . findMatch . lines <$> file
 
 main :: IO ()
 main = star1 >>= print >> star2 >>= print
