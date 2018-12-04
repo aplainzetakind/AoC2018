@@ -9,6 +9,7 @@ import Data.Maybe
 occursTimes :: Ord a => Int -> [a] -> Bool
 occursTimes n = elem n . map length . group . sort
 
+ifOccursTimesAdd :: (Num a, Ord a1) => Int -> [a1] -> a -> a
 ifOccursTimesAdd n l | occursTimes n l = (+1)
                      | otherwise         = id
 
@@ -17,6 +18,7 @@ countBoth = foldl f (0,0)
              where f (a, b) str = ( ifOccursTimesAdd 2 str a
                                   , ifOccursTimesAdd 3 str b)
 
+star1 :: String -> Int
 star1 = uncurry (*) . countBoth . lines
 
 skip :: Int -> String -> String
@@ -31,6 +33,7 @@ firstDuplicate xs = go xs S.empty
 findMatch :: [String] -> Maybe String
 findMatch ls = msum $ fmap firstDuplicate [fmap (skip n) ls | n <- [1..]]
 
+star2 :: String -> String
 star2 = fromMaybe "something happened" . findMatch . lines
 
 main :: IO ()
