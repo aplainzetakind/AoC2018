@@ -16,8 +16,6 @@ data Corners = C { idt    :: Int
                  , width  :: Int
                  , height :: Int } deriving Show
 
-file = readFile "input"
-
 number :: Parser Int
 number = read <$> many digitChar
 
