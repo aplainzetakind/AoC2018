@@ -2,3 +2,7 @@
 *~
 package.yaml
 *.swp
+*.hi
+*.o
+*.prof
+[^\.]*
